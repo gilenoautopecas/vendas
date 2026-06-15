@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load tz %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center">
+    <h3>Venda #{{ venda.id }}</h3>
+
+    <div class="d-flex gap-2">
+        <a href="{% url 'editar_venda' venda.id %}" class="btn btn-secondary">Editar</a>
+        <a href="{% url 'excluir_venda' venda.id %}" class="btn btn-danger">Excluir</a>
+        <a href="{% url 'imprimir_venda_pdf' venda.id %}" class="btn btn-dark">Imprimir PDF</a>
+    </div>
+</div>
+
+<hr>
+
+<p><strong>Data:</strong> {{ venda.data|localtime|date:"d/m/Y H:i" }}</p>
+<p><strong>Forma de Pagamento:</strong> {{ venda.forma_pagamento }}</p>
+<p><strong>Total:</strong> R$ {{ venda.total }}</p>
+
+<hr>
+
+<h4>Itens</h4>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Produto</th>
+        <th>Qtd</th>
+        <th>Preço</th>
+        <th>Subtotal</th>
+    </tr>
+
+    {% for item in itens %}
+    <tr>
+        <td>{{ item.produto.nome }}</td>
+        <td>{{ item.quantidade }}</td>
+        <td>R$ {{ item.preco_unitario }}</td>
+        <td>R$ {{ item.subtotal }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<p><strong>Observação:</strong> {{ venda.observacao }}</p>
+
+{% endblock %}

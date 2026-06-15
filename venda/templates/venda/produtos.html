@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+  body { background-color: #f4f6f9; }
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .page-header h2 {
+    font-weight: 700;
+    margin: 0;
+    font-size: 1.6rem;
+  }
+
+  /* Stat cards */
+  .stat-card {
+    border: none;
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .stat-card .label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.85;
+    margin-bottom: 0.3rem;
+  }
+  .stat-card .value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .bg-card-1 { background: linear-gradient(135deg, #343a40, #495057); }
+  .bg-card-2 { background: linear-gradient(135deg, #0d6efd, #3d8bfd); }
+  .bg-card-3 { background: linear-gradient(135deg, #198754, #28b974); }
+  .bg-card-4 { background: linear-gradient(135deg, #ffc107, #ffca2c); }
+  .bg-card-4 .label,
+  .bg-card-4 .value { color: #212529 !important; }
+
+  /* Table card */
+  .table-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    overflow: hidden;
+  }
+
+  .table-card .card-header {
+    background: #fff;
+    border-bottom: 1px solid #e9ecef;
+    padding: 1rem 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .table-card .card-header h5 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .search-wrap {
+    position: relative;
+    min-width: 260px;
+  }
+  .search-wrap .icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #adb5bd;
+    font-size: 0.85rem;
+    pointer-events: none;
+  }
+  .search-wrap input {
+    padding-left: 2rem;
+    font-size: 0.875rem;
+    border-radius: 8px;
+  }
+
+  /* Table */
+  #produto-table thead th {
+    background: #f8f9fa;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #6c757d;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+  }
+  #produto-table thead th:hover { color: #212529; }
+  #produto-table thead th.sort-active { color: #0d6efd; }
+
+  #produto-table tbody tr { transition: background 0.12s; }
+  #produto-table tbody tr:hover { background-color: #f0f5ff; }
+  #produto-table td { vertical-align: middle; font-size: 0.9rem; }
+
+  .badge-qty {
+    background: #e9ecef;
+    color: #495057;
+    padding: 0.3em 0.75em;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .venda-link {
+    font-family: monospace;
+    font-size: 0.83rem;
+    color: #0d6efd;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .venda-link:hover { text-decoration: underline; }
+
+  .subtotal-cell { color: #198754; font-weight: 600; font-family: monospace; }
+  .preco-cell    { font-family: monospace; color: #495057; }
+  .id-cell       { font-family: monospace; font-size: 0.8rem; color: #adb5bd; }
+
+  /* Empty state */
+  .empty-state { padding: 4rem 1rem; text-align: center; color: #adb5bd; }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 0.5rem; }
+
+  /* Responsive */
+  @media (max-width: 576px) {
+    .search-wrap { min-width: 100%; }
+    .stat-card .value { font-size: 1.4rem; }
+  }
+</style>
+
+<!-- Page header -->
+<div class="page-header">
+  <h2>🛒 Itens de Venda</h2>
+  <button class="btn btn-outline-secondary btn-sm" onclick="exportCSV()">
+    ⬇ Exportar CSV
+  </button>
+</div>
+
+<!-- Stats row -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card bg-card-1">
+      <div class="label">Total de Itens</div>
+      <div class="value" id="stat-total">{{ produtos|length }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card bg-card-2">
+      <div class="label">Qtd. Vendida</div>
+      <div class="value" id="stat-qty">—</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card bg-card-3">
+      <div class="label">Receita Total</div>
+      <div class="value" id="stat-receita">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- Table card -->
+<div class="table-card mb-5">
+  <div class="card-header">
+    <h5>
+      Registros
+      <span class="badge bg-secondary ms-1" id="badge-count">{{ produtos|length }}</span>
+    </h5>
+    <div class="search-wrap">
+      <span class="icon">🔍</span>
+      <input
+        type="text"
+        id="search-input"
+        class="form-control form-control-sm"
+        placeholder="Buscar produto, venda…"
+      >
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover mb-0" id="produto-table">
+      <thead>
+        <tr>
+          <th onclick="sortTable('id')">#<span class="ms-1">↕</span></th>
+          <th onclick="sortTable('venda')">Venda<span class="ms-1">↕</span></th>
+          <th onclick="sortTable('produto')">Produto<span class="ms-1">↕</span></th>
+          <th onclick="sortTable('quantidade')">Qtd.<span class="ms-1">↕</span></th>
+          <th onclick="sortTable('preco')">Preço Unit.<span class="ms-1">↕</span></th>
+          <th onclick="sortTable('subtotal')">Subtotal<span class="ms-1">↕</span></th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        {% if produtos %}
+          {% for item in produtos %}
+          <tr
+            data-id="{{ item.pk }}"
+            data-venda="{{ item.venda_id }}"
+            data-produto="{{ item.produto.nome }}"
+            data-quantidade="{{ item.quantidade }}"
+            data-preco="{{ item.preco_unitario }}"
+            data-subtotal="{{ item.subtotal }}"
+          >
+            <td class="id-cell">#{{ item.pk }}</td>
+            <td>
+              <a href="#" class="venda-link">
+                VND-{{ item.venda_id }}
+              </a>
+            </td>
+            <td><strong>{{ item.produto.nome }}</strong></td>
+            <td><span class="badge-qty">{{ item.quantidade }}</span></td>
+            <td class="preco-cell">R$ {{ item.preco_unitario }}</td>
+            <td class="subtotal-cell">R$ {{ item.subtotal }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <div class="icon">🛒</div>
+                <p class="mb-0 text-muted">Nenhum item de venda cadastrado.</p>
+              </div>
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div
+    class="d-flex align-items-center justify-content-between px-3 py-2 border-top"
+    id="pagination-row"
+    style="display: none !important;"
+  >
+    <small class="text-muted" id="page-info"></small>
+    <div id="page-btns" class="d-flex gap-1 flex-wrap"></div>
+  </div>
+</div>
+
+<script>
+  const PAGE_SIZE  = 20;
+  const allRows    = Array.from(document.querySelectorAll('#table-body tr[data-id]'));
+  let filtered     = [...allRows];
+  let sortState    = { key: null, asc: true };
+  let currentPage  = 1;
+
+  // ── Stats ──
+  function calcStats(rows) {
+    let qty = 0, receita = 0;
+    rows.forEach(r => {
+      qty     += parseInt(r.dataset.quantidade)  || 0;
+      receita += parseFloat(r.dataset.subtotal)  || 0;
+    });
+    const ticket = rows.length ? receita / rows.length : 0;
+    const fmt    = v => 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+    document.getElementById('stat-total').textContent   = rows.length;
+    document.getElementById('stat-qty').textContent     = qty.toLocaleString('pt-BR');
+    document.getElementById('stat-receita').textContent = fmt(receita);
+    document.getElementById('stat-ticket').textContent  = fmt(ticket);
+    document.getElementById('badge-count').textContent  = rows.length;
+  }
+  calcStats(allRows);
+
+  // ── Search ──
+  document.getElementById('search-input').addEventListener('input', function () {
+    const q = this.value.toLowerCase();
+    filtered = allRows.filter(r =>
+      r.dataset.produto.toLowerCase().includes(q) ||
+      r.dataset.venda.includes(q) ||
+      r.dataset.id.includes(q)
+    );
+    currentPage = 1;
+    render();
+  });
+
+  // ── Sort ──
+  function sortTable(key) {
+    sortState.asc = sortState.key === key ? !sortState.asc : true;
+    sortState.key = key;
+
+    const keys = ['id', 'venda', 'produto', 'quantidade', 'preco', 'subtotal'];
+    document.querySelectorAll('#produto-table thead th').forEach((th, i) => {
+      th.classList.toggle('sort-active', keys[i] === key);
+    });
+
+    filtered.sort((a, b) => {
+      let av = a.dataset[key] || '';
+      let bv = b.dataset[key] || '';
+      if (['id', 'venda', 'quantidade', 'preco', 'subtotal'].includes(key)) {
+        av = parseFloat(av) || 0;
+        bv = parseFloat(bv) || 0;
+      }
+      if (av < bv) return sortState.asc ? -1 :  1;
+      if (av > bv) return sortState.asc ?  1 : -1;
+      return 0;
+    });
+    currentPage = 1;
+    render();
+  }
+
+  // ── Render ──
+  function render() {
+    const tbody = document.getElementById('table-body');
+    const total = filtered.length;
+    const pages = Math.ceil(total / PAGE_SIZE) || 1;
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const page  = filtered.slice(start, start + PAGE_SIZE);
+
+    tbody.innerHTML = '';
+    if (page.length === 0) {
+      tbody.innerHTML = `
+        <tr><td colspan="6">
+          <div class="empty-state">
+            <div class="icon">🔍</div>
+            <p class="mb-0 text-muted">Nenhum resultado encontrado.</p>
+          </div>
+        </td></tr>`;
+    } else {
+      page.forEach(r => tbody.appendChild(r));
+    }
+
+    calcStats(filtered);
+
+    // Pagination UI
+    const pRow  = document.getElementById('pagination-row');
+    const pInfo = document.getElementById('page-info');
+    const pBtns = document.getElementById('page-btns');
+
+    if (total > PAGE_SIZE) {
+      pRow.style.display = 'flex';
+      pInfo.textContent  = `Exibindo ${Math.min(start + 1, total)}–${Math.min(start + PAGE_SIZE, total)} de ${total}`;
+
+      pBtns.innerHTML = '';
+      const addBtn = (label, pg, disabled, active) => {
+        const b = document.createElement('button');
+        b.className = 'btn btn-sm ' + (active ? 'btn-dark' : 'btn-outline-secondary');
+        b.innerHTML = label;
+        b.disabled  = disabled;
+        b.onclick   = () => { currentPage = pg; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+        pBtns.appendChild(b);
+      };
+
+      addBtn('&laquo;', 1, currentPage === 1, false);
+      addBtn('&lsaquo;', currentPage - 1, currentPage === 1, false);
+      for (let p = 1; p <= pages; p++) {
+        if (pages > 7 && Math.abs(p - currentPage) > 2 && p !== 1 && p !== pages) continue;
+        addBtn(p, p, false, p === currentPage);
+      }
+      addBtn('&rsaquo;', currentPage + 1, currentPage === pages, false);
+      addBtn('&raquo;', pages, currentPage === pages, false);
+    } else {
+      pRow.style.display = 'none';
+    }
+  }
+
+  // ── CSV Export ──
+  function exportCSV() {
+    const headers = ['ID', 'Venda', 'Produto', 'Quantidade', 'Preco Unitario', 'Subtotal'];
+    const rows = filtered.map(r => [
+      r.dataset.id,
+      'VND-' + r.dataset.venda,
+      '"' + r.dataset.produto + '"',
+      r.dataset.quantidade,
+      r.dataset.preco,
+      r.dataset.subtotal
+    ].join(','));
+    const csv  = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'itens_venda.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  render();
+</script>
+
+{% endblock %}
