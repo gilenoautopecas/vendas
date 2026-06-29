@@ -215,12 +215,41 @@ def visualizar_venda(request, venda_id):
         "itens": venda.itens.all()
     })
 
+# Adicione esta importação no topo do arquivo
+from core.models import Produto
 
+# Substitua a sua função produtos() atual por esta:
 def produtos(request):
-    produtos = ItemVenda.objects.all()
+    q = request.GET.get("q", "").strip()
+    
+    if q:
+        # Busca produtos pelo nome (ignorando maiúsculas/minúsculas) ou código gdoor
+        lista_produtos = Produto.objects.filter(
+            Q(nome__icontains=q) | Q(codigo_gdoor__icontains=q)
+        ).order_by("nome")
+    else:
+        lista_produtos = Produto.objects.all().order_by("nome")
 
     return render(request, "venda/produtos.html", {
-        "produtos": produtos,
+        "produtos": lista_produtos,
+        "q": q,
+    })
+
+# Adicione esta nova função para lidar com a edição:
+def editar_produto(request, produto_id):
+    produto = get_object_or_404(Produto, id=produto_id)
+    
+    if request.method == "POST":
+        produto.nome = request.POST.get("nome")
+        produto.preco_padrao = request.POST.get("preco_padrao")
+        produto.ativo = request.POST.get("ativo") == "on"
+        produto.save()
+        
+        messages.success(request, f"Produto '{produto.nome}' atualizado com sucesso!")
+        return redirect("produtos")
+
+    return render(request, "venda/editar_produto.html", {
+        "produto": produto
     })
 
 def relatorios(request):

@@ -5,3 +5,4 @@ from .models import Produto
 @admin.register(Produto)
 class ProdutoAdmin(admin.ModelAdmin):
     model = Produto
+    ordering = ("-codigo_gdoor",)

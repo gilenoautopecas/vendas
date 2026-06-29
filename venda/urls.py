@@ -14,6 +14,7 @@ urlpatterns = [
     path("relatorios/", views.relatorios, name="relatorios"),
     path("relatorios/imprimir/", views.imprimir_relatorio, name="imprimir_relatorio"),
     path("produtos/", views.produtos, name="produtos"),
+    path("produtos/editar/<int:produto_id>/", views.editar_produto, name="editar_produto"),
 
     path(
         "importar-produtos-gdoor/",

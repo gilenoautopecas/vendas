@@ -1,45 +1,111 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <title>Sistema Loja</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendas - Gileno Auto Peças</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+    <style>
+        /* Fundo da tela levemente acinzentado para destacar os blocos brancos (cards) */
+        body {
+            background-color: #f4f6f9; 
+        }
+        
+        /* Deixa a barra superior com uma sombra elegante */
+        .navbar {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+        }
+        
+        /* Estilização da Logo/Texto */
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Efeito ao passar o mouse nos links */
+        .nav-link {
+            font-weight: 500;
+            transition: color 0.2s ease-in-out;
+        }
+        .nav-link:hover {
+            color: #ffffff !important;
+        }
+
+        /* Destaque especial para o botão de Nova Venda */
+        .btn-nova-venda {
+            font-weight: 600;
+            border-radius: 50rem; /* Botão com bordas bem arredondadas */
+            padding: 0.5rem 1.5rem;
+        }
+    </style>
 </head>
 <body>
 
-<nav class="navbar navbar-dark bg-dark p-3">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3">
     <div class="container">
-        <a class="navbar-brand" href="{% url 'dashboard' %}">Vendas - Gileno Auto Peças</a>
-        <a class="btn btn-success" href="{% url 'nova_venda' %}">Nova Venda</a>
-	<a class="btn btn-warning" href="{% url 'produtos' %}">Produtos</a>
-	<a class="btn btn-info" href="{% url 'relatorios' %}">Relatórios</a>
-        <a href="{% url 'importar_produtos_gdoor' %}"
-           class="btn btn-warning"
-           onclick="return confirm('Importar produtos do Gdoor agora?');">
-            Atualizar Produtos Gdoor
+        <a class="navbar-brand d-flex align-items-center" href="{% url 'dashboard' %}">
+            <i class="bi bi-car-front-fill fs-3 me-2 text-primary"></i>
+            <span>Gileno <span class="text-primary">Auto Peças</span></span>
         </a>
+
+        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false" aria-label="Alternar navegação">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="menuPrincipal">
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+                
+                <li class="nav-item">
+                    <a class="nav-link text-light" href="{% url 'produtos' %}">
+                        <i class="bi bi-box-seam me-1"></i> Produtos
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link text-light" href="{% url 'relatorios' %}">
+                        <i class="bi bi-bar-chart-fill me-1"></i> Relatórios
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link text-warning" href="{% url 'importar_produtos_gdoor' %}" onclick="return confirm('Importar produtos do Gdoor agora? Essa ação pode levar alguns segundos.');">
+                        <i class="bi bi-cloud-arrow-down-fill me-1"></i> Sincronizar Gdoor
+                    </a>
+                </li>
+                
+                <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
+                    <a class="btn btn-primary btn-nova-venda shadow-sm d-flex align-items-center justify-content-center" href="{% url 'nova_venda' %}">
+                        <i class="bi bi-plus-circle-fill me-2"></i> Nova Venda
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
     </div>
 </nav>
+<div class="container mt-3">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0 d-flex align-items-center" role="alert">
+                <i class="bi bi-info-circle-fill me-3 fs-5"></i>
+                <div>{{ message }}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-            {{ message }}
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert"></button>
-        </div>
-    {% endfor %}
-{% endif %}
-
-<div class="container mt-4">
+<div class="container my-4">
     {% block content %}{% endblock %}
 </div>
 
 </body>
-
 </html>
