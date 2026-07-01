@@ -3,107 +3,187 @@
 
 {% block content %}
 
-<div class="row g-3">
-  <div class="col-12 col-lg-4">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title mb-1">Total Hoje</h5>
-        <div class="fs-3 fw-bold">R$ {{ total_hoje|floatformat:2 }}</div>
-        <small class="text-muted">Vendas do dia (não canceladas)</small>
+<div class="row g-3 mb-1">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-primary-subtle text-primary">
+        <i class="bi bi-cash-coin"></i>
       </div>
-    </div>
-    <div class="card">
-        <div class="card-body">
-            <div class="mt-2">
-                <small class="text-muted">Total do filtro aplicado:</small>
-                <div class="fw-bold">R$ {{ total_filtrado|floatformat:2 }}</div>
-            </div>
-        </div>
+      <div>
+        <div class="stat-label">Total Hoje</div>
+        <div class="stat-value">R$ {{ total_hoje|floatformat:2 }}</div>
+      </div>
     </div>
   </div>
 
-  <div class="col-12 col-lg-8">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Filtro / Pesquisa</h5>
-
-        <form method="get" class="row g-2 align-items-end">
-          <div class="col-12 col-md-4">
-            <label class="form-label">Pesquisar</label>
-            <input type="text" name="q" value="{{ q }}" class="form-control"
-                   placeholder="ID, produto, pagamento, obs...">
-          </div>
-
-          <div class="col-6 col-md-2">
-            <label class="form-label">Dia</label>
-            <input type="date" name="data" value="{{ data }}" class="form-control">
-          </div>
-
-          <div class="col-6 col-md-3">
-            <label class="form-label">Início</label>
-            <input type="date" name="inicio" value="{{ inicio }}" class="form-control">
-          </div>
-
-          <div class="col-6 col-md-3">
-            <label class="form-label">Fim</label>
-            <input type="date" name="fim" value="{{ fim }}" class="form-control">
-          </div>
-
-          <div class="col-12 d-flex gap-2">
-            <button class="btn btn-primary">Aplicar</button>
-            <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Limpar</a>
-          </div>
-
-          <small class="text-muted">
-            Dica: se você não preencher nada, ele mostra apenas as vendas de hoje.
-            Se preencher "Dia", ele ignora início/fim. Para período, use início e fim.
-          </small>
-        </form>
-
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-success-subtle text-success">
+        <i class="bi bi-funnel"></i>
+      </div>
+      <div>
+        <div class="stat-label">Total do Filtro</div>
+        <div class="stat-value">R$ {{ total_filtrado|floatformat:2 }}</div>
       </div>
     </div>
+  </div>
+
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-info-subtle text-info">
+        <i class="bi bi-receipt"></i>
+      </div>
+      <div>
+        <div class="stat-label">Vendas no Filtro</div>
+        <div class="stat-value">{{ qtd_filtrado }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-lg-3">
+    <a href="{% url 'nova_venda' %}" class="stat-card stat-card-action text-decoration-none">
+      <div class="stat-icon bg-white text-primary">
+        <i class="bi bi-plus-circle"></i>
+      </div>
+      <div>
+        <div class="stat-label">Ação rápida</div>
+        <div class="stat-value">Nova Venda</div>
+      </div>
+    </a>
   </div>
 </div>
 
-<div class="card mt-3">
+<div class="card filter-card mt-3">
   <div class="card-body">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <h5 class="card-title mb-0">Vendas</h5>
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-12 col-md-4">
+        <label class="form-label small text-muted mb-1">Pesquisar</label>
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" name="q" value="{{ q }}" class="form-control border-start-0 ps-0"
+                 placeholder="ID, produto, pagamento, obs...">
+        </div>
+      </div>
+
+      <div class="col-6 col-md-2">
+        <label class="form-label small text-muted mb-1">Dia</label>
+        <input type="date" name="data" value="{{ data }}" class="form-control">
+      </div>
+
+      <div class="col-6 col-md-2">
+        <label class="form-label small text-muted mb-1">Início</label>
+        <input type="date" name="inicio" value="{{ inicio }}" class="form-control">
+      </div>
+
+      <div class="col-6 col-md-2">
+        <label class="form-label small text-muted mb-1">Fim</label>
+        <input type="date" name="fim" value="{{ fim }}" class="form-control">
+      </div>
+
+      <div class="col-6 col-md-2 d-flex gap-2">
+        <button class="btn btn-primary flex-fill"><i class="bi bi-check2"></i> Aplicar</button>
+        <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}" title="Limpar filtros">
+          <i class="bi bi-x-lg"></i>
+        </a>
+      </div>
+
+      <div class="col-12">
+        <small class="text-muted">
+          <i class="bi bi-info-circle"></i>
+          Sem filtro, mostra apenas as vendas de hoje. Preenchendo "Dia", ignora início/fim.
+        </small>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card list-card mt-3">
+  <div class="card-body p-0">
+    <div class="d-flex justify-content-between align-items-center px-3 pt-3 pb-2">
+      <h6 class="mb-0 fw-semibold text-secondary text-uppercase small">Vendas</h6>
     </div>
 
     <div class="table-responsive">
-      <table class="table table-bordered align-middle">
+      <table class="table table-hover align-middle mb-0">
         <thead>
           <tr>
             <th>Venda</th>
             <th>Data</th>
             <th>Total</th>
-            <th style="width: 280px;">Ações</th>
+            <th class="text-end" style="width: 280px;">Ações</th>
           </tr>
         </thead>
         <tbody>
           {% for venda in vendas %}
           <tr>
-            <td>#{{ venda.id }}</td>
-            <td>{{ venda.data|localtime|date:"d/m/Y H:i" }}</td>
-            <td>R$ {{ venda.total }}</td>
-            <td class="d-flex gap-2">
-              <a href="{% url 'visualizar_venda' venda.id %}" class="btn btn-sm btn-primary">Visualizar</a>
-              <a href="{% url 'editar_venda' venda.id %}" class="btn btn-sm btn-secondary">Editar</a>
-              <a href="{% url 'excluir_venda' venda.id %}" class="btn btn-sm btn-danger"
-                 onclick="return confirm('Tem certeza que deseja excluir a venda #{{ venda.id }}?')">
-                 Excluir
-              </a>
+            <td><span class="fw-semibold">#{{ venda.id }}</span></td>
+            <td class="text-muted">{{ venda.data|localtime|date:"d/m/Y H:i" }}</td>
+            <td class="fw-semibold">R$ {{ venda.total }}</td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                <a href="{% url 'visualizar_venda' venda.id %}" class="btn btn-sm btn-light border" title="Visualizar">
+                  <i class="bi bi-eye"></i>
+                </a>
+                <a href="{% url 'editar_venda' venda.id %}" class="btn btn-sm btn-light border" title="Editar">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <a href="{% url 'excluir_venda' venda.id %}" class="btn btn-sm btn-light border text-danger" title="Excluir"
+                   onclick="return confirm('Tem certeza que deseja excluir a venda #{{ venda.id }}?')">
+                   <i class="bi bi-trash"></i>
+                </a>
+              </div>
             </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="4" class="text-center text-muted">Nenhuma venda encontrada.</td>
+            <td colspan="4" class="text-center text-muted py-5">
+              <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+              Nenhuma venda encontrada.
+            </td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
+
+    {% if vendas.paginator.num_pages > 1 %}
+    <div class="d-flex justify-content-between align-items-center px-3 py-3 border-top">
+      <small class="text-muted">
+        Página {{ vendas.number }} de {{ vendas.paginator.num_pages }}
+      </small>
+      <nav aria-label="Paginação de vendas">
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item {% if not vendas.has_previous %}disabled{% endif %}">
+            {% if vendas.has_previous %}
+              <a class="page-link" href="?q={{ q }}&data={{ data }}&inicio={{ inicio }}&fim={{ fim }}&page={{ vendas.previous_page_number }}">
+                <i class="bi bi-chevron-left"></i>
+              </a>
+            {% else %}
+              <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+            {% endif %}
+          </li>
+          {% for num in vendas.paginator.page_range %}
+            {% if num == vendas.number %}
+              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > vendas.number|add:"-3" and num < vendas.number|add:"3" %}
+              <li class="page-item">
+                <a class="page-link" href="?q={{ q }}&data={{ data }}&inicio={{ inicio }}&fim={{ fim }}&page={{ num }}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+          <li class="page-item {% if not vendas.has_next %}disabled{% endif %}">
+            {% if vendas.has_next %}
+              <a class="page-link" href="?q={{ q }}&data={{ data }}&inicio={{ inicio }}&fim={{ fim }}&page={{ vendas.next_page_number }}">
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            {% else %}
+              <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+            {% endif %}
+          </li>
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
 
   </div>
 </div>

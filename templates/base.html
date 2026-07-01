@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendas - Gileno Auto Peças</title>
+    <title>Vendas - Sales</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -45,6 +45,98 @@
             border-radius: 50rem; /* Botão com bordas bem arredondadas */
             padding: 0.5rem 1.5rem;
         }
+
+        /* ===== Visual moderno / clean ===== */
+        .card {
+            border: none;
+            border-radius: 14px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+        }
+
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            background: #fff;
+            border-radius: 14px;
+            padding: 1rem 1.1rem;
+            height: 100%;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            color: inherit;
+        }
+
+        .stat-card-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.1);
+        }
+
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .stat-label {
+            font-size: 0.78rem;
+            color: #6b7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .form-card {
+            border-radius: 14px;
+        }
+
+        .filter-card .form-label,
+        .filter-card label {
+            font-weight: 500;
+        }
+
+        .filter-card .form-control,
+        .filter-card .input-group-text {
+            border-radius: 10px;
+        }
+
+        .list-card table thead th {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #6b7280;
+            font-weight: 600;
+            border-bottom: 1px solid #eef0f3;
+            background: #fafbfc;
+        }
+
+        .list-card table td,
+        .list-card table th {
+            padding: 0.75rem 1rem;
+            border-color: #f1f2f4;
+        }
+
+        .pagination .page-link {
+            border-radius: 8px;
+            margin: 0 2px;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: var(--bs-primary);
+            border-color: var(--bs-primary);
+        }
     </style>
 </head>
 <body>
@@ -52,8 +144,8 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center" href="{% url 'dashboard' %}">
-            <i class="bi bi-car-front-fill fs-3 me-2 text-primary"></i>
-            <span>Gileno <span class="text-primary">Auto Peças</span></span>
+            <i class="bi bi-receipt fs-3 me-2 text-primary"></i>
+            <span>G<span class="text-primary">SALES</span></span>
         </a>
 
         <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false" aria-label="Alternar navegação">
@@ -75,18 +167,39 @@
                     </a>
                 </li>
                 
+                {% if debug %}
                 <li class="nav-item">
                     <a class="nav-link text-warning" href="{% url 'importar_produtos_gdoor' %}" onclick="return confirm('Importar produtos do Gdoor agora? Essa ação pode levar alguns segundos.');">
                         <i class="bi bi-cloud-arrow-down-fill me-1"></i> Sincronizar Gdoor
                     </a>
                 </li>
-                
+                {% endif %}
+
                 <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
                     <a class="btn btn-primary btn-nova-venda shadow-sm d-flex align-items-center justify-content-center" href="{% url 'nova_venda' %}">
                         <i class="bi bi-plus-circle-fill me-2"></i> Nova Venda
                     </a>
                 </li>
-                
+
+                {% if request.user.is_authenticated %}
+                <li class="nav-item dropdown ms-lg-2">
+                    <a class="nav-link text-light dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle me-1"></i>
+                        {% if request.user.perfil %}{{ request.user.perfil.empresa.nome }}{% else %}{{ request.user.username }}{% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="bi bi-box-arrow-right me-1"></i> Sair
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+                {% endif %}
+
             </ul>
         </div>
     </div>

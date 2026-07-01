@@ -23,11 +23,21 @@ class VendaForm(forms.ModelForm):
 class ItemVendaForm(forms.Form):
     produto = forms.ModelChoiceField(
         queryset=Produto.objects.filter(ativo=True),
-        label="Produto"
+        label="Produto",
+        widget=forms.Select(attrs={"class": "form-select"})
     )
-    quantidade = forms.DecimalField(min_value=0.01)
-    preco_unitario = forms.DecimalField(required=False)
+    quantidade = forms.DecimalField(
+        min_value=0.01,
+        widget=forms.NumberInput(attrs={"class": "form-control", "step": "0.01"})
+    )
+    preco_unitario = forms.DecimalField(
+        required=False,
+        widget=forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "placeholder": "Usar preço do produto"})
+    )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, empresa=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["produto"].queryset = Produto.objects.order_by("nome")
+        qs = Produto.objects.order_by("nome")
+        if empresa is not None:
+            qs = qs.filter(empresa=empresa)
+        self.fields["produto"].queryset = qs

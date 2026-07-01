@@ -5,7 +5,9 @@ from .services import criar_venda, adicionar_item, remover_item
 from .queries import total_hoje, listar_vendas_filtradas, vendas_por_dia
 from django.template.loader import render_to_string
 from django.http import HttpResponse
+from django.core.paginator import Paginator
 
+import json
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.utils.timezone import now
@@ -21,7 +23,7 @@ from core.services.sync_gdoor import sincronizar_produtos
 
 
 def importar_produtos_gdoor(request):
-    total_importados = sincronizar_produtos()
+    total_importados = sincronizar_produtos(request.user.perfil.empresa)
 
     messages.success(
         request,
@@ -40,7 +42,7 @@ def formatar_real(valor):
 
 
 def imprimir_venda_pdf(request, venda_id):
-    venda = get_object_or_404(Venda, id=venda_id)
+    venda = get_object_or_404(Venda, id=venda_id, empresa=request.user.perfil.empresa)
     html_string = render_to_string("venda/pdf_venda.html", {
         "venda": venda,
         "itens": venda.itens.all()
@@ -58,6 +60,7 @@ def imprimir_venda_pdf(request, venda_id):
 
 
 def dashboard(request):
+    empresa = request.user.perfil.empresa
     q = request.GET.get("q", "").strip()
     data = request.GET.get("data", "").strip()
     inicio = request.GET.get("inicio", "").strip()
@@ -77,6 +80,7 @@ def dashboard(request):
     fim_date = to_date(fim)
 
     vendas = listar_vendas_filtradas(
+        empresa,
         q=q or None,
         data=data_date,
         inicio=inicio_date,
@@ -86,16 +90,22 @@ def dashboard(request):
 
 
     total_hoje = (
-        Venda.objects.filter(data__date=now().date(), cancelada=False)
+        Venda.objects.filter(empresa=empresa, data__date=now().date(), cancelada=False)
         .aggregate(total=Sum("total"))["total"] or 0
     )
 
     total_filtrado = vendas.aggregate(total=Sum("total"))["total"] or 0
+    qtd_filtrado = vendas.count()
+
+    paginator = Paginator(vendas, 10)
+    page_number = request.GET.get("page")
+    vendas_page = paginator.get_page(page_number)
 
     return render(request, "venda/dashboard.html", {
         "total_hoje": total_hoje,
         "total_filtrado": total_filtrado,
-        "vendas": vendas,
+        "qtd_filtrado": qtd_filtrado,
+        "vendas": vendas_page,
         "q": q,
         "data": data,
         "inicio": inicio,
@@ -109,6 +119,7 @@ def nova_venda(request):
         form = VendaForm(request.POST)
         if form.is_valid():
             venda = criar_venda(
+                empresa=request.user.perfil.empresa,
                 forma_pagamento=form.cleaned_data["forma_pagamento"],
                 observacao=form.cleaned_data["observacao"]
             )
@@ -121,11 +132,12 @@ def nova_venda(request):
 
 
 def editar_venda(request, venda_id):
-    venda = get_object_or_404(Venda, id=venda_id)
-    form_item = ItemVendaForm()
+    empresa = request.user.perfil.empresa
+    venda = get_object_or_404(Venda, id=venda_id, empresa=empresa)
+    form_item = ItemVendaForm(empresa=empresa)
 
     if request.method == "POST":
-        form_item = ItemVendaForm(request.POST)
+        form_item = ItemVendaForm(request.POST, empresa=empresa)
         if form_item.is_valid():
             adicionar_item(
                 venda=venda,
@@ -144,14 +156,14 @@ def editar_venda(request, venda_id):
 
 
 def deletar_item(request, item_id):
-    item = get_object_or_404(ItemVenda, id=item_id)
+    item = get_object_or_404(ItemVenda, id=item_id, venda__empresa=request.user.perfil.empresa)
     venda_id = item.venda.id
     remover_item(item)
     return redirect("editar_venda", venda_id=venda_id)
 
 
 def finalizar_venda_view(request, venda_id):
-    venda = get_object_or_404(Venda, id=venda_id)
+    venda = get_object_or_404(Venda, id=venda_id, empresa=request.user.perfil.empresa)
 
     if not venda.itens.exists():
         return redirect("editar_venda", venda_id=venda.id)
@@ -169,6 +181,7 @@ def finalizar_venda_view(request, venda_id):
         hoje = timezone.localdate()
 
         total_dia = Venda.objects.filter(
+            empresa=venda.empresa,
             data__date=hoje,
             finalizada=True,
             cancelada=False
@@ -196,19 +209,19 @@ def finalizar_venda_view(request, venda_id):
 
 
 def cancelar_venda_view(request, venda_id):
-    venda = get_object_or_404(Venda, id=venda_id)
+    venda = get_object_or_404(Venda, id=venda_id, empresa=request.user.perfil.empresa)
     venda.delete()
     return redirect("dashboard")
 
 
 def excluir_venda(request, venda_id):
-    venda = get_object_or_404(Venda, id=venda_id)
+    venda = get_object_or_404(Venda, id=venda_id, empresa=request.user.perfil.empresa)
     venda.delete()
     return redirect("dashboard")
 
 
 def visualizar_venda(request, venda_id):
-    venda = get_object_or_404(Venda, id=venda_id)
+    venda = get_object_or_404(Venda, id=venda_id, empresa=request.user.perfil.empresa)
 
     return render(request, "venda/visualizar_venda.html", {
         "venda": venda,
@@ -220,24 +233,30 @@ from core.models import Produto
 
 # Substitua a sua função produtos() atual por esta:
 def produtos(request):
+    empresa = request.user.perfil.empresa
     q = request.GET.get("q", "").strip()
-    
+
     if q:
         # Busca produtos pelo nome (ignorando maiúsculas/minúsculas) ou código gdoor
         lista_produtos = Produto.objects.filter(
-            Q(nome__icontains=q) | Q(codigo_gdoor__icontains=q)
+            Q(nome__icontains=q) | Q(codigo_gdoor__icontains=q),
+            empresa=empresa
         ).order_by("nome")
     else:
-        lista_produtos = Produto.objects.all().order_by("nome")
+        lista_produtos = Produto.objects.filter(empresa=empresa).order_by("nome")
+
+    paginator = Paginator(lista_produtos, 15)
+    page_number = request.GET.get("page")
+    produtos_page = paginator.get_page(page_number)
 
     return render(request, "venda/produtos.html", {
-        "produtos": lista_produtos,
+        "produtos": produtos_page,
         "q": q,
     })
 
 # Adicione esta nova função para lidar com a edição:
 def editar_produto(request, produto_id):
-    produto = get_object_or_404(Produto, id=produto_id)
+    produto = get_object_or_404(Produto, id=produto_id, empresa=request.user.perfil.empresa)
     
     if request.method == "POST":
         produto.nome = request.POST.get("nome")
@@ -253,6 +272,7 @@ def editar_produto(request, produto_id):
     })
 
 def relatorios(request):
+    empresa = request.user.perfil.empresa
     hoje = now().date()
     filtro = request.GET.get("filtro", "mes")
     inicio = request.GET.get("inicio")
@@ -272,7 +292,7 @@ def relatorios(request):
         inicio_date = hoje - timedelta(days=30)
         fim_date = hoje
 
-    dados = vendas_por_dia(inicio_date, fim_date)
+    dados = vendas_por_dia(empresa, inicio_date, fim_date)
 
     total_periodo = sum(d["total"] for d in dados)
     dias = [d["dia"].strftime("%d/%m") for d in dados]
@@ -283,6 +303,7 @@ def relatorios(request):
     totais_pagamento = (
         Venda.objects
         .filter(
+            empresa=empresa,
             data__date__range=(inicio_date, fim_date),
             cancelada=False
         )
@@ -310,23 +331,27 @@ def relatorios(request):
             "total": total,
             "quantidade": item["quantidade"],
             "percentual": round(percentual, 2),
-        })  
+        })
 
     return render(request, "venda/relatorios.html", {
         "dados": dados,
-        "dias": dias,
-        "totais": totais,
+        "dias_json": json.dumps(dias),
+        "totais_json": json.dumps(totais),
         "quantidades": quantidades,
         "total_periodo": total_periodo,
         "inicio": inicio_date,
         "fim": fim_date,
-        "totais_pagamento": totais_pagamento_formatado, 
+        "totais_pagamento": totais_pagamento_formatado,
+        "labels_pagamento_json": json.dumps([item["forma"] for item in totais_pagamento_formatado]),
+        "valores_pagamento_json": json.dumps([float(item["total"]) for item in totais_pagamento_formatado]),
+        "filtro": filtro,
     })
 
 
 
 from .services import gerar_grafico_svg
 def imprimir_relatorio(request):
+    empresa = request.user.perfil.empresa
     hoje = now().date()
     filtro = request.GET.get("filtro", "mes")
     inicio = request.GET.get("inicio")
@@ -362,7 +387,7 @@ def imprimir_relatorio(request):
         fim_date = hoje
 
     # Buscar dados agrupados por dia
-    dados = vendas_por_dia(inicio_date, fim_date)
+    dados = vendas_por_dia(empresa, inicio_date, fim_date)
 
     # Agora SIM calcular o total do período
     total_periodo = sum(d["total"] for d in dados)
@@ -378,6 +403,7 @@ def imprimir_relatorio(request):
     totais_pagamento = (
         Venda.objects
         .filter(
+            empresa=empresa,
             data__date__range=(inicio_date, fim_date),
             cancelada=False
         )

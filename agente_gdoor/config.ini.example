@@ -1,0 +1,9 @@
+[gdoor]
+isql_path = C:\Program Files (x86)\Firebird\Firebird_5_0\isql.exe
+db_path = C:\GDOOR Sistemas\GDOOR PRO\DATAGES.FDB
+db_user = SYSDBA
+db_password = masterkey
+
+[servidor]
+url = https://seu-sistema.exemplo.com
+token = COLE_AQUI_O_TOKEN_DA_EMPRESA

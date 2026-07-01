@@ -81,8 +81,8 @@ def total_por_periodo(data_inicio, data_fim):
     )["total"] or 0
 
 
-def listar_vendas_filtradas(q=None, data=None, inicio=None, fim=None, limit=100):
-    qs = Venda.objects.filter(cancelada=False).order_by("-data")
+def listar_vendas_filtradas(empresa, q=None, data=None, inicio=None, fim=None, limit=100):
+    qs = Venda.objects.filter(empresa=empresa, cancelada=False).order_by("-data")
 
     if not data and not (inicio and fim):
         qs = qs.filter(data__date=now().date())
@@ -104,9 +104,10 @@ def listar_vendas_filtradas(q=None, data=None, inicio=None, fim=None, limit=100)
     return qs
 
 
-def vendas_por_dia(inicio, fim):
+def vendas_por_dia(empresa, inicio, fim):
     return (
         Venda.objects.filter(
+            empresa=empresa,
             cancelada=False,
             data__date__range=[inicio, fim]
         )

@@ -14,8 +14,9 @@ def atualizar_total_venda(venda):
 
 
 
-def criar_venda(forma_pagamento, observacao=None):
+def criar_venda(empresa, forma_pagamento, observacao=None):
     venda = Venda.objects.create(
+        empresa=empresa,
         forma_pagamento=forma_pagamento,
         observacao=observacao or ""
     )

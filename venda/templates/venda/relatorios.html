@@ -3,149 +3,223 @@
 
 {% block content %}
 
-<h3>Relatórios de Vendas</h3>
-<a href="{% url 'imprimir_relatorio' %}?filtro={{ request.GET.filtro }}&inicio={{ inicio }}&fim={{ fim }}"
-   class="btn btn-dark mb-3"
-   target="_blank">
-    Imprimir Relatório
-</a>
-
-<form method="get" class="row g-2 mb-4">
-    <div class="col-md-3">
-        <select name="filtro" class="form-select">
-            <option value="mes">Últimos 30 dias</option>
-            <option value="semana">Últimos 7 dias</option>
-            <option value="periodo">Período manual</option>
-        </select>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+    <div class="d-flex align-items-center gap-2">
+        <div class="stat-icon bg-primary-subtle text-primary">
+            <i class="bi bi-bar-chart-fill"></i>
+        </div>
+        <div>
+            <h5 class="mb-0 fw-semibold">Relatórios de Vendas</h5>
+            <small class="text-muted">{{ inicio|date:"d/m/Y" }} a {{ fim|date:"d/m/Y" }}</small>
+        </div>
     </div>
 
-    <div class="col-md-3">
-        <input type="date" name="inicio" class="form-control" value="{{ inicio|date:'Y-m-d' }}">
-    </div>
+    <a href="{% url 'imprimir_relatorio' %}?filtro={{ filtro }}&inicio={{ inicio|date:'Y-m-d' }}&fim={{ fim|date:'Y-m-d' }}"
+       class="btn btn-dark"
+       target="_blank">
+        <i class="bi bi-printer"></i> Imprimir Relatório
+    </a>
+</div>
 
-    <div class="col-md-3">
-        <input type="date" name="fim" class="form-control" value="{{ fim|date:'Y-m-d' }}">
-    </div>
-
-    <div class="col-md-3">
-        <button class="btn btn-primary w-100">Aplicar</button>
-    </div>
-</form>
-
-<div class="card shadow-sm mb-4">
+<div class="card filter-card mb-3">
     <div class="card-body">
-        <h4>Total do Período: <strong>R$ {{ total_periodo|floatformat:2 }}</strong></h4>
-        <small>{{ inicio|date:"d/m/Y" }} a {{ fim|date:"d/m/Y" }}</small>
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-12 col-md-3">
+                <label class="form-label small text-muted mb-1">Período</label>
+                <select name="filtro" class="form-select" id="filtroSelect">
+                    <option value="mes" {% if filtro == "mes" %}selected{% endif %}>Últimos 30 dias</option>
+                    <option value="semana" {% if filtro == "semana" %}selected{% endif %}>Últimos 7 dias</option>
+                    <option value="periodo" {% if filtro == "periodo" %}selected{% endif %}>Período manual</option>
+                </select>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <label class="form-label small text-muted mb-1">Início</label>
+                <input type="date" name="inicio" class="form-control" value="{{ inicio|date:'Y-m-d' }}">
+            </div>
+
+            <div class="col-6 col-md-3">
+                <label class="form-label small text-muted mb-1">Fim</label>
+                <input type="date" name="fim" class="form-control" value="{{ fim|date:'Y-m-d' }}">
+            </div>
+
+            <div class="col-12 col-md-3">
+                <button class="btn btn-primary w-100"><i class="bi bi-check2"></i> Aplicar</button>
+            </div>
+        </form>
     </div>
 </div>
 
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-        <h5>Gráfico de Total de Vendas por Dia</h5>
-        <canvas id="grafico"></canvas>
-    </div>
-</div>
-
-<div class="card shadow-sm mb-4">
-    <div class="card-body table-responsive">
-        <h5>Detalhes por Dia</h5>
-        <table class="table table-bordered">
-            <tr>
-                <th>Dia</th>
-                <th>Total (R$)</th>
-                <th>Qtde de Vendas</th>
-            </tr>
-
-            {% for d in dados %}
-            <tr>
-                <td>{{ d.dia|date:"d/m/Y" }}</td>
-                <td>{{ d.total|floatformat:2 }}</td>
-                <td>{{ d.quantidade }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
-</div>
-
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-        <h5>Total por Forma de Pagamento</h5>
-
-        <table class="table table-bordered">
-            <tr>
-                <th>Forma</th>
-                <th>Total (R$)</th>
-                <th>Qtde de Vendas</th>
-            </tr>
-
-            {% for p in totais_pagamento %}
-            <tr>
-                <td>{{ p.forma }}</td>
-                <td>{{ p.total|floatformat:2 }}</td>
-                <td>{{ p.quantidade }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="3">Nenhuma venda no período</td>
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
-</div>
-
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-        <h5>Distribuição por Forma de Pagamento</h5>
-        <div class="pizza-container">
-           <canvas id="graficoPizza"></canvas>
+<div class="row g-3 mb-1">
+    <div class="col-12 col-lg-4">
+        <div class="stat-card">
+            <div class="stat-icon bg-success-subtle text-success">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+            <div>
+                <div class="stat-label">Total do Período</div>
+                <div class="stat-value">R$ {{ total_periodo|floatformat:2 }}</div>
+            </div>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-const ctx = document.getElementById('grafico');
-new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: {{ dias|safe }},
-        datasets: [
-            {
-                label: 'Total R$',
-                data: {{ totais|safe }},
-                borderWidth: 1,
-                backgroundColor: 'rgba(54, 162, 235, 0.5)',
-            }
-        ]
-    },
-});
-</script>
-<script>
-const ctxPizza = document.getElementById('graficoPizza');
+<div class="row g-3 mt-1">
+    <div class="col-12 col-lg-7">
+        <div class="card chart-card h-100">
+            <div class="card-body">
+                <h6 class="fw-semibold text-secondary text-uppercase small mb-3">Total de Vendas por Dia</h6>
+                <div class="chart-wrapper">
+                    <canvas id="grafico"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 
-new Chart(ctxPizza, {
-    type: 'pie',
-    data: {
-        labels: [
-            {% for p in totais_pagamento %}
-                "{{ p.forma }}",
-            {% endfor %}
-        ],
-        datasets: [{
-            data: [
-                {% for p in totais_pagamento %}
-                    {{ p.total }},
-                {% endfor %}
-            ],
-            backgroundColor: [
-                '#4CAF50',
-                '#2196F3',
-                '#FF9800',
-                '#9C27B0',
-            ],
-        }]
-    }
-});
+    <div class="col-12 col-lg-5">
+        <div class="card chart-card h-100">
+            <div class="card-body">
+                <h6 class="fw-semibold text-secondary text-uppercase small mb-3">Distribuição por Forma de Pagamento</h6>
+                <div class="chart-wrapper chart-wrapper-pizza">
+                    {% if totais_pagamento %}
+                        <canvas id="graficoPizza"></canvas>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-pie-chart fs-3 d-block mb-2"></i>
+                            Nenhuma venda no período.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-12 col-lg-7">
+        <div class="card list-card h-100">
+            <div class="card-body p-0">
+                <div class="px-3 pt-3 pb-2">
+                    <h6 class="mb-0 fw-semibold text-secondary text-uppercase small">Detalhes por Dia</h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Dia</th>
+                                <th>Total (R$)</th>
+                                <th>Qtde de Vendas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in dados %}
+                            <tr>
+                                <td>{{ d.dia|date:"d/m/Y" }}</td>
+                                <td class="fw-semibold">{{ d.total|floatformat:2 }}</td>
+                                <td class="text-muted">{{ d.quantidade }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-5">
+                                    <i class="bi bi-calendar-x fs-3 d-block mb-2"></i>
+                                    Nenhuma venda no período.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+        <div class="card list-card h-100">
+            <div class="card-body p-0">
+                <div class="px-3 pt-3 pb-2">
+                    <h6 class="mb-0 fw-semibold text-secondary text-uppercase small">Total por Forma de Pagamento</h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Forma</th>
+                                <th>Total (R$)</th>
+                                <th>Qtde</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in totais_pagamento %}
+                            <tr>
+                                <td>{{ p.forma }}</td>
+                                <td class="fw-semibold">{{ p.total|floatformat:2 }}</td>
+                                <td class="text-muted">{{ p.quantidade }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-5">
+                                    Nenhuma venda no período.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+const paletaCores = ['#4361ee', '#4CAF50', '#FF9800', '#9C27B0', '#e63946', '#06b6d4', '#f4a261', '#8d99ae'];
+
+const ctx = document.getElementById('grafico');
+if (ctx) {
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ dias_json|safe }},
+            datasets: [
+                {
+                    label: 'Total R$',
+                    data: {{ totais_json|safe }},
+                    borderRadius: 6,
+                    backgroundColor: 'rgba(67, 97, 238, 0.6)',
+                    hoverBackgroundColor: 'rgba(67, 97, 238, 0.85)',
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
+
+const ctxPizza = document.getElementById('graficoPizza');
+if (ctxPizza) {
+    const labelsPagamento = {{ labels_pagamento_json|safe }};
+    const dadosPagamento = {{ valores_pagamento_json|safe }};
+
+    new Chart(ctxPizza, {
+        type: 'pie',
+        data: {
+            labels: labelsPagamento,
+            datasets: [{
+                data: dadosPagamento,
+                backgroundColor: labelsPagamento.map((_, i) => paletaCores[i % paletaCores.length]),
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+}
 </script>
 
 <style>
@@ -153,13 +227,20 @@ new Chart(ctxPizza, {
     nav, button, form { display: none !important; }
     body { margin: 0; }
 }
-</style>
-<style>
-.pizza-container {
-    max-width: 400px;   /* controla largura */
-    height: 400px;      /* controla altura */
-    margin: 0 auto;     /* centraliza */
+
+.chart-card {
+    border-radius: 14px;
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 320px;
+}
+
+.chart-wrapper-pizza {
+    height: 320px;
+    max-width: 380px;
+    margin: 0 auto;
 }
 </style>
 {% endblock %}
-

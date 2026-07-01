@@ -1,68 +1,120 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold text-dark">📦 Catálogo de Produtos</h2>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+    <div class="d-flex align-items-center gap-2">
+        <div class="stat-icon bg-primary-subtle text-primary">
+            <i class="bi bi-box-seam"></i>
+        </div>
+        <div>
+            <h5 class="mb-0 fw-semibold">Catálogo de Produtos</h5>
+            <small class="text-muted">{{ produtos.paginator.count }} produto{{ produtos.paginator.count|pluralize }}</small>
+        </div>
+    </div>
 </div>
 
-<div class="card shadow-sm mb-4 border-0">
+<div class="card filter-card mb-3">
     <div class="card-body">
-        <form method="get" class="row g-2 align-items-center">
+        <form method="get" class="row g-2 align-items-end">
             <div class="col-12 col-md-8">
-                <input type="text" name="q" value="{{ q }}" class="form-control form-control-lg" placeholder="Pesquisar por nome ou código Gdoor...">
+                <label class="form-label small text-muted mb-1">Pesquisar</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control border-start-0 ps-0"
+                           placeholder="Nome ou código Gdoor...">
+                </div>
             </div>
             <div class="col-12 col-md-4 d-flex gap-2">
-                <button type="submit" class="btn btn-primary btn-lg px-4">Pesquisar</button>
-                <a href="{% url 'produtos' %}" class="btn btn-outline-secondary btn-lg px-4">Limpar</a>
+                <button type="submit" class="btn btn-primary flex-fill"><i class="bi bi-check2"></i> Pesquisar</button>
+                <a href="{% url 'produtos' %}" class="btn btn-outline-secondary" title="Limpar"><i class="bi bi-x-lg"></i></a>
             </div>
         </form>
     </div>
 </div>
 
-<div class="card shadow-sm border-0">
+<div class="card list-card">
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead>
                     <tr>
-                        <th class="ps-4">Código Gdoor</th>
+                        <th>Código Gdoor</th>
                         <th>Nome do Produto</th>
                         <th>Preço Padrão</th>
                         <th>Status</th>
-                        <th class="text-end pe-4">Ações</th>
+                        <th class="text-end" style="width: 120px;">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for p in produtos %}
                     <tr>
-                        <td class="ps-4 text-muted">{{ p.codigo_gdoor|default:"-" }}</td>
-                        <td><strong class="text-dark">{{ p.nome }}</strong></td>
-                        <td class="font-monospace text-success fw-bold">R$ {{ p.preco_padrao }}</td>
+                        <td class="text-muted">{{ p.codigo_gdoor|default:"-" }}</td>
+                        <td><span class="fw-semibold">{{ p.nome }}</span></td>
+                        <td class="fw-semibold">R$ {{ p.preco_padrao }}</td>
                         <td>
                             {% if p.ativo %}
-                                <span class="badge bg-success rounded-pill px-3">Ativo</span>
+                                <span class="badge bg-success-subtle text-success rounded-pill px-3">Ativo</span>
                             {% else %}
-                                <span class="badge bg-danger rounded-pill px-3">Inativo</span>
+                                <span class="badge bg-danger-subtle text-danger rounded-pill px-3">Inativo</span>
                             {% endif %}
                         </td>
-                        <td class="text-end pe-4">
-                            <a href="{% url 'editar_produto' p.id %}" class="btn btn-sm btn-outline-primary">
-                                ✏️ Editar
+                        <td class="text-end">
+                            <a href="{% url 'editar_produto' p.id %}" class="btn btn-sm btn-light border" title="Editar">
+                                <i class="bi bi-pencil"></i>
                             </a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center py-5 text-muted">
-                            <div class="fs-1 mb-3">🔍</div>
-                            <h5>Nenhum produto encontrado.</h5>
-                            <p>Tente buscar por outro termo ou atualize a lista do Gdoor.</p>
+                        <td colspan="5" class="text-center text-muted py-5">
+                            <i class="bi bi-search fs-3 d-block mb-2"></i>
+                            Nenhum produto encontrado.
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+
+        {% if produtos.paginator.num_pages > 1 %}
+        <div class="d-flex justify-content-between align-items-center px-3 py-3 border-top">
+            <small class="text-muted">
+                Página {{ produtos.number }} de {{ produtos.paginator.num_pages }}
+            </small>
+            <nav aria-label="Paginação de produtos">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item {% if not produtos.has_previous %}disabled{% endif %}">
+                        {% if produtos.has_previous %}
+                            <a class="page-link" href="?q={{ q }}&page={{ produtos.previous_page_number }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        {% else %}
+                            <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                        {% endif %}
+                    </li>
+                    {% for num in produtos.paginator.page_range %}
+                        {% if num == produtos.number %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > produtos.number|add:"-3" and num < produtos.number|add:"3" %}
+                            <li class="page-item">
+                                <a class="page-link" href="?q={{ q }}&page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {% if not produtos.has_next %}disabled{% endif %}">
+                        {% if produtos.has_next %}
+                            <a class="page-link" href="?q={{ q }}&page={{ produtos.next_page_number }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        {% else %}
+                            <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                        {% endif %}
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

@@ -4,7 +4,7 @@ from core.models import Produto
 from core.services.gdoor import buscar_produtos_gdoor
 
 
-def sincronizar_produtos():
+def sincronizar_produtos(empresa):
     produtos = buscar_produtos_gdoor()
 
     contador = 0
@@ -17,6 +17,7 @@ def sincronizar_produtos():
 
         try:
             Produto.objects.update_or_create(
+                empresa=empresa,
                 codigo_gdoor=p["codigo"],
                 defaults={
                     "nome": p.get("descricao", "")[:150],
