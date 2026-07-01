@@ -53,6 +53,22 @@
   </div>
 </div>
 
+{% if sync_label %}
+<div class="d-flex align-items-center gap-1 mt-2 mb-1 px-1">
+  <span class="badge bg-success-subtle text-success border border-success-subtle d-flex align-items-center gap-1 py-1 px-2" style="font-size:0.75rem; border-radius:8px;">
+    <i class="bi bi-arrow-repeat"></i>
+    Gdoor sincronizado {{ sync_label }}
+  </span>
+</div>
+{% else %}
+<div class="d-flex align-items-center gap-1 mt-2 mb-1 px-1">
+  <span class="badge bg-warning-subtle text-warning border border-warning-subtle d-flex align-items-center gap-1 py-1 px-2" style="font-size:0.75rem; border-radius:8px;">
+    <i class="bi bi-exclamation-circle"></i>
+    Gdoor nunca sincronizado
+  </span>
+</div>
+{% endif %}
+
 <div class="card filter-card mt-3">
   <div class="card-body">
     <form method="get" class="row g-2 align-items-end">

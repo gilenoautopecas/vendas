@@ -23,7 +23,11 @@ from core.services.sync_gdoor import sincronizar_produtos
 
 
 def importar_produtos_gdoor(request):
-    total_importados = sincronizar_produtos(request.user.perfil.empresa)
+    empresa = request.user.perfil.empresa
+    total_importados = sincronizar_produtos(empresa)
+
+    empresa.ultima_sincronizacao = now()
+    empresa.save(update_fields=["ultima_sincronizacao"])
 
     messages.success(
         request,
@@ -101,6 +105,23 @@ def dashboard(request):
     page_number = request.GET.get("page")
     vendas_page = paginator.get_page(page_number)
 
+    ultima_sync = empresa.ultima_sincronizacao
+    if ultima_sync:
+        delta = now() - ultima_sync
+        minutos = int(delta.total_seconds() // 60)
+        if minutos < 1:
+            sync_label = "agora mesmo"
+        elif minutos < 60:
+            sync_label = f"há {minutos} min"
+        elif minutos < 1440:
+            horas = minutos // 60
+            sync_label = f"há {horas}h"
+        else:
+            dias = minutos // 1440
+            sync_label = f"há {dias} dia{'s' if dias > 1 else ''}"
+    else:
+        sync_label = None
+
     return render(request, "venda/dashboard.html", {
         "total_hoje": total_hoje,
         "total_filtrado": total_filtrado,
@@ -110,6 +131,7 @@ def dashboard(request):
         "data": data,
         "inicio": inicio,
         "fim": fim,
+        "sync_label": sync_label,
     })
 
 

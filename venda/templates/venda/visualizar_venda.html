@@ -3,43 +3,136 @@
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center">
-    <h3>Venda #{{ venda.id }}</h3>
-
-    <div class="d-flex gap-2">
-        <a href="{% url 'editar_venda' venda.id %}" class="btn btn-secondary">Editar</a>
-        <a href="{% url 'excluir_venda' venda.id %}" class="btn btn-danger">Excluir</a>
-        <a href="{% url 'imprimir_venda_pdf' venda.id %}" class="btn btn-dark">Imprimir PDF</a>
+<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+  <div class="d-flex align-items-center gap-3">
+    <div class="stat-icon bg-primary-subtle text-primary">
+      <i class="bi bi-receipt fs-5"></i>
     </div>
+    <div>
+      <div class="stat-label">Venda</div>
+      <div class="stat-value">#{{ venda.id }}</div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Listagem
+    </a>
+    <a href="{% url 'editar_venda' venda.id %}" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-pencil me-1"></i> Editar
+    </a>
+    <a href="{% url 'imprimir_venda_pdf' venda.id %}" class="btn btn-dark btn-sm" target="_blank">
+      <i class="bi bi-printer me-1"></i> Imprimir
+    </a>
+    <a href="{% url 'excluir_venda' venda.id %}"
+       class="btn btn-outline-danger btn-sm"
+       onclick="return confirm('Excluir a venda #{{ venda.id }}? Essa ação não pode ser desfeita.')">
+      <i class="bi bi-trash me-1"></i> Excluir
+    </a>
+  </div>
 </div>
 
-<hr>
+<div class="row g-3">
 
-<p><strong>Data:</strong> {{ venda.data|localtime|date:"d/m/Y H:i" }}</p>
-<p><strong>Forma de Pagamento:</strong> {{ venda.forma_pagamento }}</p>
-<p><strong>Total:</strong> R$ {{ venda.total }}</p>
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="text-uppercase text-muted fw-semibold small mb-3">Informações da venda</h6>
 
-<hr>
+        <div class="d-flex flex-column gap-3">
+          <div class="d-flex align-items-center gap-2">
+            <div class="stat-icon bg-info-subtle text-info" style="width:36px;height:36px;min-width:36px;font-size:1rem;">
+              <i class="bi bi-calendar3"></i>
+            </div>
+            <div>
+              <div class="stat-label">Data</div>
+              <div class="fw-semibold text-dark">{{ venda.data|localtime|date:"d/m/Y H:i" }}</div>
+            </div>
+          </div>
 
-<h4>Itens</h4>
+          <div class="d-flex align-items-center gap-2">
+            <div class="stat-icon bg-success-subtle text-success" style="width:36px;height:36px;min-width:36px;font-size:1rem;">
+              <i class="bi bi-credit-card"></i>
+            </div>
+            <div>
+              <div class="stat-label">Pagamento</div>
+              <div class="fw-semibold text-dark">{{ venda.forma_pagamento }}</div>
+            </div>
+          </div>
 
-<table class="table table-bordered">
-    <tr>
-        <th>Produto</th>
-        <th>Qtd</th>
-        <th>Preço</th>
-        <th>Subtotal</th>
-    </tr>
+          <div class="d-flex align-items-center gap-2">
+            <div class="stat-icon bg-primary-subtle text-primary" style="width:36px;height:36px;min-width:36px;font-size:1rem;">
+              <i class="bi bi-cash-coin"></i>
+            </div>
+            <div>
+              <div class="stat-label">Total</div>
+              <div class="fw-bold fs-5 text-primary">R$ {{ venda.total|floatformat:2 }}</div>
+            </div>
+          </div>
 
-    {% for item in itens %}
-    <tr>
-        <td>{{ item.produto.nome }}</td>
-        <td>{{ item.quantidade }}</td>
-        <td>R$ {{ item.preco_unitario }}</td>
-        <td>R$ {{ item.subtotal }}</td>
-    </tr>
-    {% endfor %}
-</table>
-<p><strong>Observação:</strong> {{ venda.observacao }}</p>
+          {% if venda.observacao %}
+          <div class="d-flex align-items-start gap-2">
+            <div class="stat-icon bg-warning-subtle text-warning" style="width:36px;height:36px;min-width:36px;font-size:1rem;margin-top:2px;">
+              <i class="bi bi-chat-left-text"></i>
+            </div>
+            <div>
+              <div class="stat-label">Observação</div>
+              <div class="text-dark" style="white-space:pre-line;">{{ venda.observacao }}</div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card list-card h-100">
+      <div class="card-body p-0">
+        <div class="px-3 pt-3 pb-2">
+          <h6 class="mb-0 fw-semibold text-secondary text-uppercase small">Itens</h6>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th class="text-center">Qtd</th>
+                <th class="text-end">Preço unit.</th>
+                <th class="text-end">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in itens %}
+              <tr>
+                <td class="fw-semibold">{{ item.produto.nome }}</td>
+                <td class="text-center text-muted">{{ item.quantidade }}</td>
+                <td class="text-end text-muted">R$ {{ item.preco_unitario|floatformat:2 }}</td>
+                <td class="text-end fw-semibold">R$ {{ item.subtotal|floatformat:2 }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="text-center text-muted py-4">
+                  <i class="bi bi-inbox d-block fs-3 mb-1"></i>
+                  Nenhum item nesta venda.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+            {% if itens %}
+            <tfoot>
+              <tr class="table-light">
+                <td colspan="3" class="text-end fw-bold text-uppercase small text-muted">Total</td>
+                <td class="text-end fw-bold text-primary fs-6">R$ {{ venda.total|floatformat:2 }}</td>
+              </tr>
+            </tfoot>
+            {% endif %}
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
 
 {% endblock %}

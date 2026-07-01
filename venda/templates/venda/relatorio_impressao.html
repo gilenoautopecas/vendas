@@ -2,112 +2,319 @@
 <html lang="pt-br">
 <head>
 <meta charset="utf-8">
-
 <title>Relatório de Vendas</title>
-
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        font-size: 12px;
-        margin: 30px;
-    }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    h1 { font-size: 18px; }
-    h2 { font-size: 16px; }
+  body {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: #1f2937;
+    background: #fff;
+    padding: 32px;
+  }
 
-    .grafico-container {
-        margin: 20px 0;
-        text-align: center;
-    }
+  /* ── Header ── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #1d4ed8;
+  }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-    }
+  .brand {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #111827;
+  }
+  .brand span { color: #1d4ed8; }
 
-    th, td {
-        border: 1px solid #000;
-        padding: 6px;
-    }
+  .header-right {
+    text-align: right;
+    color: #6b7280;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .header-right strong {
+    display: block;
+    font-size: 16px;
+    color: #1f2937;
+  }
 
-    th {
-        background: #f2f2f2;
-    }
+  /* ── Stat cards ── */
+  .stat-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
 
-    .total {
-        font-size: 18px;
-        margin-top: 20px;
-        font-weight: bold;
-        text-align: right;
-    }
+  .stat-card {
+    flex: 1;
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 14px 16px;
+    border-left: 4px solid #1d4ed8;
+  }
 
-    @media print {
-        button { display: none; }
-    }
+  .stat-card.green  { border-color: #16a34a; }
+  .stat-card.purple { border-color: #7c3aed; }
+
+  .stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #9ca3af;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  /* ── Section title ── */
+  .section-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b7280;
+    font-weight: 700;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  /* ── Chart ── */
+  .chart-block {
+    margin-bottom: 28px;
+  }
+
+  .grafico-container {
+    display: flex;
+    justify-content: center;
+    margin: 12px 0;
+  }
+
+  .charts-row {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 28px;
+  }
+
+  .charts-row .chart-block {
+    flex: 1;
+    margin-bottom: 0;
+  }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 28px;
+  }
+
+  thead th {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #6b7280;
+    font-weight: 600;
+    padding: 8px 10px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+  }
+
+  thead th.right  { text-align: right; }
+  thead th.center { text-align: center; }
+
+  tbody td {
+    padding: 9px 10px;
+    border-bottom: 1px solid #f1f2f4;
+    color: #374151;
+  }
+
+  tbody td.right  { text-align: right; }
+  tbody td.center { text-align: center; }
+  tbody td.bold   { font-weight: 600; color: #1f2937; }
+
+  tfoot td {
+    padding: 10px;
+    font-weight: 700;
+    font-size: 13px;
+    border-top: 2px solid #e5e7eb;
+    background: #f9fafb;
+  }
+
+  tfoot td.right { text-align: right; color: #1d4ed8; }
+  tfoot td.label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #6b7280;
+    font-weight: 600;
+  }
+
+  /* ── Progress bar (pagamento) ── */
+  .progress-bar-wrap {
+    background: #e5e7eb;
+    border-radius: 4px;
+    height: 6px;
+    width: 80px;
+    display: inline-block;
+    vertical-align: middle;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: #1d4ed8;
+    border-radius: 4px;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 32px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 10px;
+    color: #9ca3af;
+  }
+
+  /* ── Print controls ── */
+  .no-print {
+    margin-bottom: 20px;
+  }
+
+  @media print {
+    body { padding: 16px; }
+    .no-print { display: none !important; }
+  }
 </style>
-
 </head>
 <body>
 
-<h1>Relatório de Vendas</h1>
-<p>Período: <strong>{{ inicio|date:"d/m/Y" }}</strong> a <strong>{{ fim|date:"d/m/Y" }}</strong></p>
-
-<div class="grafico-container">
-    {{ grafico_svg|safe }}
+<div class="no-print">
+  <button onclick="window.print()" style="padding:8px 20px;background:#1d4ed8;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;margin-right:8px;">
+    Imprimir
+  </button>
+  <button onclick="window.close()" style="padding:8px 20px;background:#f3f4f6;color:#374151;border:1px solid #d1d5db;border-radius:6px;font-size:13px;cursor:pointer;">
+    Fechar
+  </button>
 </div>
 
-<div class="total">
-    Total do Período: R$ {{ total_periodo|floatformat:2 }}
+<!-- Header -->
+<div class="header">
+  <div class="brand">G<span>SALES</span></div>
+  <div class="header-right">
+    Relatório de Vendas
+    <strong>{{ inicio|date:"d/m/Y" }} a {{ fim|date:"d/m/Y" }}</strong>
+  </div>
 </div>
 
+<!-- Stat cards -->
+<div class="stat-row">
+  <div class="stat-card">
+    <div class="stat-label">Total do período</div>
+    <div class="stat-value">R$ {{ total_periodo|floatformat:2 }}</div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-label">Dias com vendas</div>
+    <div class="stat-value">{{ dados|length }}</div>
+  </div>
+  <div class="stat-card purple">
+    <div class="stat-label">Formas de pagamento</div>
+    <div class="stat-value">{{ totais_pagamento|length }}</div>
+  </div>
+</div>
+
+<!-- Gráficos lado a lado -->
+<div class="charts-row">
+  <div class="chart-block">
+    <div class="section-title">Vendas por dia</div>
+    <div class="grafico-container">{{ grafico_svg|safe }}</div>
+  </div>
+  <div class="chart-block">
+    <div class="section-title">Por forma de pagamento</div>
+    <div class="grafico-container">{{ grafico_pagamento_svg|safe }}</div>
+  </div>
+</div>
+
+<!-- Tabela vendas por dia -->
+<div class="section-title">Detalhamento por dia</div>
 <table>
-    <thead>
-        <tr>
-            <th>Dia</th>
-            <th>Total (R$)</th>
-            <th>Vendas</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for d in dados %}
-        <tr>
-            <td>{{ d.dia|date:"d/m/Y" }}</td>
-            <td>{{ d.total|floatformat:2 }}</td>
-            <td>{{ d.quantidade }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
+  <thead>
+    <tr>
+      <th>Dia</th>
+      <th class="right">Total (R$)</th>
+      <th class="center">Vendas</th>
+      <th class="right">Ticket médio</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for d in dados %}
+    <tr>
+      <td class="bold">{{ d.dia|date:"d/m/Y" }}</td>
+      <td class="right">R$ {{ d.total|floatformat:2 }}</td>
+      <td class="center">{{ d.quantidade }}</td>
+      <td class="right">R$ {% if d.quantidade %}{{ d.total|floatformat:2 }}{% else %}0,00{% endif %}</td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">Nenhuma venda no período.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <td class="label">Total</td>
+      <td class="right">R$ {{ total_periodo|floatformat:2 }}</td>
+      <td></td>
+      <td></td>
+    </tr>
+  </tfoot>
 </table>
-<hr>
-<h2>Forma de Pagamento</h2>
 
-<div class="grafico-container">
-    {{ grafico_pagamento_svg|safe }}
-</div>
-
+<!-- Tabela pagamentos -->
+<div class="section-title">Formas de pagamento</div>
 <table>
-    <thead>
-        <tr>
-            <th>Forma</th>
-            <th>Total (R$)</th>
-            <th>Vendas</th>
-            <th>%</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for p in totais_pagamento %}
-        <tr>
-            <td>{{ p.forma }}</td>
-            <td>{{ p.total|floatformat:2 }}</td>
-            <td>{{ p.quantidade }}</td>
-            <td>{{ p.percentual }}%</td>
-        </tr>
-        {% endfor %}
-    </tbody>
+  <thead>
+    <tr>
+      <th>Forma</th>
+      <th class="right">Total (R$)</th>
+      <th class="center">Vendas</th>
+      <th class="center">Participação</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in totais_pagamento %}
+    <tr>
+      <td class="bold">{{ p.forma }}</td>
+      <td class="right">R$ {{ p.total|floatformat:2 }}</td>
+      <td class="center">{{ p.quantidade }}</td>
+      <td class="center">
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" style="width:{{ p.percentual }}%;"></div>
+        </div>
+        <span style="margin-left:6px;font-size:11px;color:#6b7280;">{{ p.percentual }}%</span>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">Sem dados de pagamento.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
 </table>
 
-<button onclick="window.print()">Imprimir</button>
+<div class="footer">
+  Gerado pelo GSales &nbsp;·&nbsp; {{ inicio|date:"d/m/Y" }} a {{ fim|date:"d/m/Y" }}
+</div>
 
 </body>
 </html>

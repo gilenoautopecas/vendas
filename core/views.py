@@ -6,6 +6,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.utils import timezone
 
 from .models import Produto, Empresa
 
@@ -83,5 +84,8 @@ def sync_produtos(request):
             contador += 1
         except Exception:
             continue
+
+    empresa.ultima_sincronizacao = timezone.now()
+    empresa.save(update_fields=["ultima_sincronizacao"])
 
     return JsonResponse({"importados": contador})

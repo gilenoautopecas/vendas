@@ -10,6 +10,7 @@ class Empresa(models.Model):
     sync_token = models.CharField(max_length=64, unique=True, editable=False)
     ativa = models.BooleanField(default=True)
     criado_em = models.DateTimeField(auto_now_add=True)
+    ultima_sincronizacao = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.sync_token:

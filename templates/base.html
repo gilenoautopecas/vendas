@@ -167,13 +167,7 @@
                     </a>
                 </li>
                 
-                {% if debug %}
-                <li class="nav-item">
-                    <a class="nav-link text-warning" href="{% url 'importar_produtos_gdoor' %}" onclick="return confirm('Importar produtos do Gdoor agora? Essa ação pode levar alguns segundos.');">
-                        <i class="bi bi-cloud-arrow-down-fill me-1"></i> Sincronizar Gdoor
-                    </a>
-                </li>
-                {% endif %}
+                {# botão de sync local desabilitado visualmente — lógica mantida em venda/views.py::importar_produtos_gdoor #}
 
                 <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
                     <a class="btn btn-primary btn-nova-venda shadow-sm d-flex align-items-center justify-content-center" href="{% url 'nova_venda' %}">
