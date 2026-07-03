@@ -60,18 +60,25 @@ def main():
         webbrowser.open("http://127.0.0.1:8000")
         return
 
+    log_path = projeto / "gsales.log"
+    log = open(log_path, "w", encoding="utf-8")
+
     subprocess.Popen(
         [str(python), str(manage), "runserver", "--noreload"],
         cwd=str(projeto),
         creationflags=subprocess.CREATE_NO_WINDOW,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stdout=log,
+        stderr=log,
     )
 
-    if aguardar_servidor():
+    if aguardar_servidor(timeout=60):
         webbrowser.open("http://127.0.0.1:8000")
     else:
-        mostrar_erro("O servidor demorou para responder.\nTente abrir manualmente: http://127.0.0.1:8000")
+        mostrar_erro(
+            f"O servidor não respondeu em 60 segundos.\n"
+            f"Verifique o arquivo de log:\n{log_path}\n\n"
+            f"Ou acesse manualmente: http://127.0.0.1:8000"
+        )
 
 
 if __name__ == "__main__":
