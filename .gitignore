@@ -264,3 +264,7 @@ poetry.toml
 pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,djangoagente_gdoor/config.ini
+
+# Licença GSales — chave privada e licença do cliente nunca sobem pro git
+licenca/privada.pem
+licenca.key
