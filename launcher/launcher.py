@@ -23,7 +23,8 @@ def mostrar_erro(mensagem):
 
 def pasta_projeto():
     if getattr(sys, "frozen", False):
-        return Path(sys.executable).resolve().parent.parent
+        # .exe fica na raiz do projeto (mesma pasta do manage.py)
+        return Path(sys.executable).resolve().parent
     return Path(__file__).resolve().parent.parent
 
 
