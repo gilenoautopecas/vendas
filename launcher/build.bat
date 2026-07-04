@@ -1,13 +1,10 @@
 @echo off
 REM Gera o GSales.exe (rodar este script no Windows).
-REM Requer Python instalado com pyinstaller: pip install pyinstaller
+REM Requer Python instalado.
 
-pip install pyinstaller --quiet
+pip install pyinstaller pystray pillow --quiet
 
-REM Com icone (descomente e ajuste o caminho se tiver um .ico):
-REM pyinstaller --onefile --windowed --icon=launcher.ico --name GSales launcher.py
-
-pyinstaller --onefile --windowed --name GSales launcher.py
+pyinstaller --onefile --windowed --icon=gsales.ico --name GSales --add-data "gsales.ico;." --add-data "gsales.png;." launcher.py
 
 echo.
 echo ====================================================
