@@ -10,6 +10,7 @@ ROTAS_PUBLICAS = (
     "/core/sync-produtos/",
     "/static/",
     "/licenca-expirada/",
+    "/configurar/",
 )
 
 
@@ -38,6 +39,19 @@ class LoginRequiredMiddleware:
 
     def __call__(self, request):
         if request.user.is_authenticated or request.path_info.startswith(ROTAS_PUBLICAS):
+            # Redireciona para o wizard se o usuário não tem empresa vinculada
+            if (
+                request.user.is_authenticated
+                and not request.user.is_superuser
+                and not request.path_info.startswith(ROTAS_PUBLICAS)
+                and request.path_info != "/configurar/"
+            ):
+                try:
+                    request.user.perfil
+                except Exception:
+                    from django.shortcuts import redirect
+                    return redirect("setup_empresa")
+
             return self.get_response(request)
 
         return redirect_to_login(request.get_full_path(), login_url=settings.LOGIN_URL)

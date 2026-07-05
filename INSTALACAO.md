@@ -95,26 +95,7 @@ Sem esse arquivo o sistema não abre.
 
 ---
 
-## 8. Criar a empresa e vincular o usuário
-
-1. Abra o **Prompt de Comando** e inicie o servidor temporariamente:
-```bat
-cd C:\projetos\vendas-main
-venv\Scripts\python manage.py runserver
-```
-2. Acesse no navegador: http://127.0.0.1:8000/admin/
-3. Faça login com o usuário criado no passo 6
-4. Clique em **Empresas → Adicionar empresa**
-   - Preencha o nome e o slug (ex: `gileno`)
-   - Salve
-5. Clique em **Perfil usuarios → Adicionar perfil usuario**
-   - Selecione o usuário criado e a empresa criada
-   - Salve
-6. Feche o Prompt de Comando (Ctrl+C)
-
----
-
-## 9. Instalar o launcher (GSales.exe)
+## 8. Instalar o launcher (GSales.exe)
 
 O `GSales.exe` é o atalho que abre o sistema com um duplo clique.
 
@@ -143,6 +124,16 @@ Para o sistema já estar rodando quando o PC liga:
 
 1. Pressione `Win + R`, digite `shell:startup` e pressione Enter
 2. Cole o atalho do `GSales.exe` nessa pasta
+
+---
+
+## 9. Primeiro acesso — criar a empresa
+
+1. Dê duplo clique em **GSales** na Área de Trabalho
+2. O navegador abre automaticamente — faça login com o usuário criado no passo 6
+3. O sistema detecta que ainda não há empresa cadastrada e abre uma tela de configuração
+4. Digite o nome do seu negócio e clique em **Criar empresa e entrar**
+5. Pronto — o sistema está pronto para uso
 
 ---
 
@@ -185,11 +176,10 @@ Deve aparecer: `Sincronização concluída: XXXX produtos importados.`
 
 ## 11. Teste final
 
-1. Dê duplo clique em **GSales** na Área de Trabalho
-2. O navegador deve abrir automaticamente em http://127.0.0.1:8000
-3. Faça login com o usuário criado
-4. Confirme que os produtos do Gdoor aparecem em **Produtos**
-5. Crie uma venda de teste
+1. Abra o GSales pelo atalho da Área de Trabalho
+2. Faça login normalmente
+3. Confirme que os produtos do Gdoor aparecem em **Produtos**
+4. Crie uma venda de teste
 
 ---
 
@@ -204,7 +194,7 @@ C:\projetos\vendas-main\atualizar.bat
 Ele vai baixar as novidades, atualizar o banco e avisar quando terminar.
 **Não apaga nenhum dado.**
 
-> Após atualizar, feche e abra o GSales novamente.
+> Após atualizar, feche e abra o GSales novamente pelo atalho.
 
 ---
 
