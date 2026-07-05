@@ -38,20 +38,24 @@ class LoginRequiredMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.user.is_authenticated or request.path_info.startswith(ROTAS_PUBLICAS):
-            # Redireciona para o wizard se o usuário não tem empresa vinculada
-            if (
-                request.user.is_authenticated
-                and not request.user.is_superuser
-                and not request.path_info.startswith(ROTAS_PUBLICAS)
-                and request.path_info != "/configurar/"
-            ):
-                try:
-                    request.user.perfil
-                except Exception:
-                    from django.shortcuts import redirect
-                    return redirect("setup_empresa")
+        from django.shortcuts import redirect
 
+        # Rotas públicas passam direto
+        if request.path_info.startswith(ROTAS_PUBLICAS):
             return self.get_response(request)
 
-        return redirect_to_login(request.get_full_path(), login_url=settings.LOGIN_URL)
+        # Não autenticado → vai pro login
+        if not request.user.is_authenticated:
+            return redirect_to_login(request.get_full_path(), login_url=settings.LOGIN_URL)
+
+        # Superuser não precisa de empresa vinculada
+        if request.user.is_superuser:
+            return self.get_response(request)
+
+        # Usuário sem empresa → wizard de configuração
+        try:
+            request.user.perfil
+        except Exception:
+            return redirect("setup_empresa")
+
+        return self.get_response(request)
