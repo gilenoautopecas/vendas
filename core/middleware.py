@@ -53,9 +53,8 @@ class LoginRequiredMiddleware:
             return self.get_response(request)
 
         # Usuário sem empresa → wizard de configuração
-        try:
-            request.user.perfil
-        except Exception:
+        from .models import PerfilUsuario
+        if not PerfilUsuario.objects.filter(user=request.user).exists():
             return redirect("setup_empresa")
 
         return self.get_response(request)
