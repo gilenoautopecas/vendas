@@ -11,6 +11,7 @@ class Empresa(models.Model):
     ativa = models.BooleanField(default=True)
     criado_em = models.DateTimeField(auto_now_add=True)
     ultima_sincronizacao = models.DateTimeField(null=True, blank=True)
+    enviar_telegram = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.sync_token:

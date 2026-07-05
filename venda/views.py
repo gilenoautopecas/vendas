@@ -225,7 +225,8 @@ def finalizar_venda_view(request, venda_id):
         texto += f"\n-----------\n"
         texto += f"\nMontante vendido hoje: {formatar_real(total_dia)}\n"
 
-        enviar_mensagem_telegram(texto)
+        if venda.empresa.enviar_telegram:
+            enviar_mensagem_telegram(texto)
 
     return redirect("dashboard")
 
